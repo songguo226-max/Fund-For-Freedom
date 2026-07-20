@@ -1,0 +1,169 @@
+:root {
+  color-scheme: light;
+  --bg: oklch(96.5% 0.006 250);
+  --surface: oklch(99.1% 0.004 250);
+  --surface-soft: oklch(97.4% 0.006 250);
+  --surface-pressed: oklch(94.8% 0.009 250);
+  --line: oklch(89.6% 0.012 250);
+  --line-strong: oklch(82.4% 0.018 250);
+  --text: oklch(24% 0.018 250);
+  --muted: oklch(48% 0.022 250);
+  --muted-2: oklch(63% 0.018 250);
+  --rise: oklch(49% 0.17 24);
+  --rise-soft: oklch(95.8% 0.028 24);
+  --fall: oklch(46% 0.12 172);
+  --fall-soft: oklch(94.6% 0.034 172);
+  --accent: oklch(45% 0.13 255);
+  --accent-soft: oklch(94.6% 0.026 255);
+  --warning: oklch(63% 0.11 82);
+  --shadow: 0 10px 26px rgba(30, 39, 52, 0.06);
+  --radius-lg: 8px;
+  --radius-md: 6px;
+  --radius-sm: 4px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
+  text-rendering: geometricPrecision;
+}
+
+button, input, select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+a {
+  color: inherit;
+}
+
+.page {
+  width: min(1380px, 100%);
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.shell {
+  min-height: 100vh;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.rise { color: var(--rise); }
+.fall { color: var(--fall); }
+.flat { color: var(--muted); }
+
+.icon-button,
+.text-button,
+.primary-button,
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  transition: background 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out, transform 160ms ease-out;
+}
+
+.icon-button svg,
+.text-button svg,
+.primary-button svg,
+.ghost-button svg {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.9;
+  transition: transform 160ms ease-out;
+}
+
+.icon-button {
+  width: 36px;
+  padding: 0;
+}
+
+.text-button,
+.primary-button,
+.ghost-button {
+  padding: 0 12px;
+}
+
+.primary-button {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: oklch(98% 0.004 250);
+}
+
+.ghost-button {
+  background: var(--surface-soft);
+}
+
+.icon-button:hover,
+.text-button:hover,
+.ghost-button:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-soft);
+}
+
+.icon-button:hover svg,
+.text-button:hover svg,
+.ghost-button:hover svg,
+.primary-button:hover svg {
+  transform: translateY(-1px);
+}
+
+.primary-button:hover {
+  transform: translateY(-1px);
+}
+
+.field {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+
+.field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 14px;
+  }
+}
