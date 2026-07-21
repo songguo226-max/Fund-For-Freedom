@@ -1,3 +1,27 @@
+@font-face {
+  font-family: "Fund EN Display";
+  src: url("../../../../assets/font/en/Outfit/Outfit[wght].ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Fund EN Text";
+  src: url("../../../../assets/font/en/DMSans/DMSans[opsz,wght].ttf") format("truetype");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Fund CN Display";
+  src: url("../../../../assets/font/cn/WenYuanFonts/WenYuanSansSCVF.ttf") format("truetype");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
   --bg: oklch(96.5% 0.006 250);
@@ -20,6 +44,8 @@
   --radius-lg: 8px;
   --radius-md: 6px;
   --radius-sm: 4px;
+  --font-body: "Fund EN Text", "Fund CN Display", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  --font-display: "Fund EN Display", "Fund CN Display", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -28,14 +54,27 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
+  font-synthesis: none;
   line-height: 1.45;
   text-rendering: geometricPrecision;
 }
 
 button, input, select {
   font: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+strong,
+b,
+.font-display {
+  font-family: var(--font-display);
 }
 
 button {

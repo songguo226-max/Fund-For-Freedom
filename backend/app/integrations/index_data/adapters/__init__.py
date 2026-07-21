@@ -1,0 +1,1 @@
+"""Index data provider adapters."""

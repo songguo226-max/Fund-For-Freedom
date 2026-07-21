@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app.integrations.fund_data.interface import FundNotFound, ProviderError
+from app.integrations.index_data.interface import IndexDataError, IndexNotFound
 
 
 def install_error_handlers(app: FastAPI) -> None:
@@ -13,4 +14,12 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(ProviderError)
     async def _provider_error(_: Request, exc: ProviderError) -> JSONResponse:
+        return JSONResponse(status_code=502, content={"detail": str(exc)})
+
+    @app.exception_handler(IndexNotFound)
+    async def _index_not_found(_: Request, exc: IndexNotFound) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+    @app.exception_handler(IndexDataError)
+    async def _index_provider_error(_: Request, exc: IndexDataError) -> JSONResponse:
         return JSONResponse(status_code=502, content={"detail": str(exc)})

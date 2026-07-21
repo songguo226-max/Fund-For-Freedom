@@ -23,6 +23,9 @@ export const api = {
   dataSources(filters = {}) {
     return request('/data-sources', filters)
   },
+  indexTrends(params = {}) {
+    return request('/index-trends', params)
+  },
   search(q, source) {
     return request('/search', { q, source })
   },

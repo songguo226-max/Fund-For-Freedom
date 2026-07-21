@@ -67,6 +67,41 @@ class TrendPoint(BaseModel):
     pct: float
 
 
+class IndexOut(BaseModel):
+    id: str
+    name: str
+    market: str
+    currency: str
+    sources: list[str]
+    akSymbol: str | None = None
+    yfinanceSymbol: str | None = None
+
+
+class IndexTrendPoint(BaseModel):
+    date: str
+    close: float
+    nav: float
+    pct: float
+    cumulativePct: float
+
+
+class IndexRangeTrend(BaseModel):
+    range: str
+    startDate: str
+    endDate: str
+    points: list[IndexTrendPoint]
+
+
+class IndexTrendOut(BaseModel):
+    id: str
+    name: str
+    market: str
+    currency: str
+    source: str
+    ranges: list[IndexRangeTrend]
+    error: str | None = None
+
+
 class DataSourceOut(BaseModel):
     id: str
     name: str

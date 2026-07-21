@@ -6,6 +6,8 @@ dependencies = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.29",
     "httpx>=0.27",
+    "akshare>=1.18",
+    "yfinance>=0.2.63",
 ]
 
 [project.optional-dependencies]

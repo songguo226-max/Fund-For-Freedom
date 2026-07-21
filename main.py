@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -16,6 +17,7 @@ FRONTEND = ROOT / "frontend"
 NPM = "npm.cmd" if os.name == "nt" else "npm"
 BACKEND_PORT = "8010"
 FRONTEND_PORT = "5173"
+HOST = "127.0.0.1"
 
 
 def _cmd_text(cmd: list[str]) -> str:
@@ -25,6 +27,20 @@ def _cmd_text(cmd: list[str]) -> str:
 def _run_step(name: str, cmd: list[str], cwd: Path) -> None:
     print(f"[setup] {name}: {_cmd_text(cmd)}", flush=True)
     subprocess.run(cmd, cwd=cwd, check=True)
+
+
+def _port_is_open(port: str) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(0.4)
+        return sock.connect_ex((HOST, int(port))) == 0
+
+
+def _assert_port_available(port: str, label: str) -> None:
+    if _port_is_open(port):
+        raise RuntimeError(
+            f"{label} port {port} is already in use. "
+            f"Stop the existing service on http://{HOST}:{port} and run this command again."
+        )
 
 
 def _start(name: str, cmd: list[str], cwd: Path) -> subprocess.Popen:
@@ -37,14 +53,25 @@ def _run_backend() -> None:
     sys.path.insert(0, str(BACKEND))
     import uvicorn
 
-    uvicorn.run("app.main:app", host="127.0.0.1", port=int(BACKEND_PORT))
+    uvicorn.run("app.main:app", host=HOST, port=int(BACKEND_PORT))
 
 
 def _start_backend() -> BaseProcess:
-    print(f"[start] backend: uvicorn app.main:app --host 127.0.0.1 --port {BACKEND_PORT}", flush=True)
+    print(f"[start] backend: uvicorn app.main:app --host {HOST} --port {BACKEND_PORT}", flush=True)
     proc = get_context("spawn").Process(target=_run_backend, name="fund-backend")
     proc.start()
     return proc
+
+
+def _wait_for_backend(proc: BaseProcess, timeout_seconds: float = 12.0) -> None:
+    deadline = time.time() + timeout_seconds
+    while time.time() < deadline:
+        if not proc.is_alive():
+            raise RuntimeError(f"Backend failed to start; process exited with code {proc.exitcode}.")
+        if _port_is_open(BACKEND_PORT):
+            return
+        time.sleep(0.2)
+    raise RuntimeError(f"Backend did not become ready on http://{HOST}:{BACKEND_PORT}.")
 
 
 def _stop_backend(proc: BaseProcess) -> None:
@@ -89,14 +116,21 @@ def main() -> int:
         return 1
 
     _ensure_frontend_deps()
+    try:
+        _assert_port_available(BACKEND_PORT, "Backend")
+        _assert_port_available(FRONTEND_PORT, "Frontend")
+    except RuntimeError as exc:
+        print(f"[error] {exc}", file=sys.stderr, flush=True)
+        return 1
 
     backend = None
     frontend = None
     try:
         backend = _start_backend()
+        _wait_for_backend(backend)
         frontend = _start(
             "frontend",
-            [NPM, "run", "dev", "--", "--host", "127.0.0.1", "--port", FRONTEND_PORT],
+            [NPM, "run", "dev", "--", "--host", HOST, "--port", FRONTEND_PORT, "--strictPort"],
             FRONTEND,
         )
     except Exception:
@@ -107,8 +141,8 @@ def main() -> int:
         raise
 
     print("\n应用已启动：", flush=True)
-    print(f"  前端: http://127.0.0.1:{FRONTEND_PORT}", flush=True)
-    print(f"  后端: http://127.0.0.1:{BACKEND_PORT}/api/v1/health", flush=True)
+    print(f"  前端: http://{HOST}:{FRONTEND_PORT}", flush=True)
+    print(f"  后端: http://{HOST}:{BACKEND_PORT}/api/v1/health", flush=True)
     print("\n按 Ctrl+C 停止前后端。\n", flush=True)
 
     try:
