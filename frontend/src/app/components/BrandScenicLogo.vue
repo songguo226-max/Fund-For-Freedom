@@ -12,8 +12,8 @@ const logoSrc = '/brand/fund-road-logo.png'
 
 <style scoped>
 .brand-logo {
-  position: fixed;
-  z-index: 70;
+  position: absolute;
+  z-index: 50;
   top: 14px;
   left: 18px;
   display: flex;

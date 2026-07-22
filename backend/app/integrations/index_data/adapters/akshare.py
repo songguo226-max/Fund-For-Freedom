@@ -126,7 +126,13 @@ def _records(df: Any) -> list[dict]:
     return []
 
 
-def _points_from_records(records: list[dict], *, date_keys: tuple[str, ...], close_keys: tuple[str, ...]) -> list[IndexPoint]:
+def _points_from_records(
+    records: list[dict],
+    *,
+    date_keys: tuple[str, ...],
+    close_keys: tuple[str, ...],
+    pct_keys: tuple[str, ...] = ("pct", "change_pct", "pct_chg", "涨跌幅", "涨幅", "changePercent"),
+) -> list[IndexPoint]:
     points: list[IndexPoint] = []
     for row in records:
         raw_day = _first_value(row, date_keys)
@@ -134,7 +140,13 @@ def _points_from_records(records: list[dict], *, date_keys: tuple[str, ...], clo
         if raw_day in (None, "") or raw_close in (None, ""):
             continue
         try:
-            points.append(IndexPoint(day=date.fromisoformat(str(raw_day)[:10]), close=float(raw_close)))
+            points.append(
+                IndexPoint(
+                    day=date.fromisoformat(str(raw_day)[:10]),
+                    close=float(raw_close),
+                    pct=_parse_pct(_first_value(row, pct_keys)),
+                )
+            )
         except (TypeError, ValueError):
             continue
     return sorted(points, key=lambda item: item.day)
@@ -145,6 +157,17 @@ def _first_value(row: dict, keys: tuple[str, ...]) -> Any:
         if key in row:
             return row[key]
     return None
+
+
+def _parse_pct(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, str):
+        value = value.strip().replace("%", "").replace("+", "").replace(",", "")
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _filter_points(points: list[IndexPoint], start: date, end: date) -> list[IndexPoint]:

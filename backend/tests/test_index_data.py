@@ -40,6 +40,17 @@ def test_build_nav_trend_normalizes_against_first_close() -> None:
     assert trend[2]["pct"] == 10
 
 
+def test_build_nav_trend_uses_provider_pct_when_available() -> None:
+    trend = build_nav_trend(
+        [
+            IndexPoint(day=date(2026, 1, 1), close=100),
+            IndexPoint(day=date(2026, 1, 2), close=110, pct=7.5),
+        ]
+    )
+
+    assert trend[1]["pct"] == 7.5
+
+
 class _FailingProvider:
     name = "akshare"
 

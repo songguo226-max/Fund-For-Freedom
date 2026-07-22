@@ -12,7 +12,9 @@ def build_nav_trend(points: list[IndexPoint]) -> list[dict]:
     previous_close: float | None = None
     trend: list[dict] = []
     for point in sorted_points:
-        pct = 0.0 if previous_close is None else (point.close / previous_close - 1) * 100
+        pct = point.pct
+        if pct is None:
+            pct = 0.0 if previous_close is None else (point.close / previous_close - 1) * 100
         nav = point.close / base
         trend.append(
             {

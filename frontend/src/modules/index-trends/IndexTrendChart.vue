@@ -16,24 +16,78 @@ const changeClass = computed(() => {
   return 'flat'
 })
 
+function formatClose(value, options = {}) {
+  const number = Number(value)
+  if (!Number.isFinite(number)) return '--'
+  return number.toLocaleString('en-US', {
+    minimumFractionDigits: options.minimumFractionDigits ?? 0,
+    maximumFractionDigits: options.maximumFractionDigits ?? 2,
+  })
+}
+
+function formatPct(value) {
+  const number = Number(value)
+  if (!Number.isFinite(number)) return '--'
+  return `${number > 0 ? '+' : ''}${number.toFixed(2)}%`
+}
+
+function formatMonth(value) {
+  if (!value) return ''
+  return String(value).slice(0, 7)
+}
+
+function pctClass(value) {
+  const number = Number(value)
+  if (number > 0) return 'tooltip-rise'
+  if (number < 0) return 'tooltip-fall'
+  return 'tooltip-flat'
+}
+
 const option = computed(() => ({
   tooltip: {
     trigger: 'axis',
-    valueFormatter: (value) => Number(value).toFixed(4),
+    axisPointer: {
+      type: 'line',
+      lineStyle: { color: '#9eb1d9', type: 'dashed' },
+    },
+    formatter(params) {
+      const point = params?.[0]?.data
+      if (!point) return ''
+      return [
+        `<div class="index-tooltip-date">${point.date}</div>`,
+        '<div class="index-tooltip-row">',
+        '<span class="index-tooltip-dot"></span>',
+        `<span>${props.item.name}</span>`,
+        `<strong>${formatClose(point.close, { minimumFractionDigits: 2 })}</strong>`,
+        '</div>',
+        '<div class="index-tooltip-row">',
+        '<span class="index-tooltip-spacer"></span>',
+        '<span>涨跌幅</span>',
+        `<strong class="${pctClass(point.pct)}">${formatPct(point.pct)}</strong>`,
+        '</div>',
+      ].join('')
+    },
   },
-  grid: { top: 20, right: 18, bottom: 30, left: 46 },
+  grid: { top: 20, right: 18, bottom: 30, left: 58 },
   xAxis: {
     type: 'category',
     boundaryGap: false,
     data: points.value.map((point) => point.date),
     axisLine: { lineStyle: { color: '#d4dce7' } },
     axisTick: { show: false },
-    axisLabel: { color: '#667085', hideOverlap: true },
+    axisLabel: {
+      color: '#667085',
+      hideOverlap: true,
+      formatter: formatMonth,
+    },
   },
   yAxis: {
     type: 'value',
     scale: true,
-    axisLabel: { color: '#667085' },
+    axisLabel: {
+      color: '#667085',
+      formatter: (value) => formatClose(value),
+    },
     splitLine: { lineStyle: { color: '#e8edf4' } },
   },
   series: [
@@ -42,7 +96,12 @@ const option = computed(() => ({
       type: 'line',
       smooth: true,
       showSymbol: false,
-      data: points.value.map((point) => point.nav),
+      data: points.value.map((point) => ({
+        value: point.close,
+        date: point.date,
+        close: point.close,
+        pct: point.pct,
+      })),
       lineStyle: { width: 2, color: '#3452b4' },
       itemStyle: { color: '#3452b4' },
       areaStyle: { color: 'rgba(52, 82, 180, 0.08)' },
@@ -69,7 +128,7 @@ const { elRef } = useChart(option)
 
     <footer v-if="first && latest" class="chart-meta">
       <span>{{ first.date }}</span>
-      <span>最新 {{ latest.date }} · {{ latest.nav.toFixed(4) }}</span>
+      <span>最新 {{ latest.date }} · {{ formatClose(latest.close, { minimumFractionDigits: 2 }) }}</span>
     </footer>
   </article>
 </template>
@@ -135,6 +194,55 @@ const { elRef } = useChart(option)
   gap: 12px;
   color: var(--muted);
   font-size: 12px;
+}
+
+:global(.index-tooltip-date) {
+  margin-bottom: 8px;
+  color: oklch(42% 0.03 250);
+  font-size: 12px;
+}
+
+:global(.index-tooltip-row) {
+  display: grid;
+  grid-template-columns: 10px minmax(92px, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  color: oklch(34% 0.025 250);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+:global(.index-tooltip-row + .index-tooltip-row) {
+  margin-top: 4px;
+}
+
+:global(.index-tooltip-dot) {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #3452b4;
+}
+
+:global(.index-tooltip-spacer) {
+  width: 9px;
+}
+
+:global(.index-tooltip-row strong) {
+  justify-self: end;
+  color: oklch(35% 0.02 250);
+  font-weight: 760;
+}
+
+:global(.index-tooltip-row .tooltip-rise) {
+  color: var(--rise);
+}
+
+:global(.index-tooltip-row .tooltip-fall) {
+  color: var(--fall);
+}
+
+:global(.index-tooltip-row .tooltip-flat) {
+  color: var(--muted);
 }
 
 @media (max-width: 560px) {

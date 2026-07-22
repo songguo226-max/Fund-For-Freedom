@@ -1,8 +1,10 @@
 <script setup>
-import { LineChart, RefreshCw } from 'lucide-vue-next'
+import { Landmark, LineChart, Newspaper, RefreshCw } from 'lucide-vue-next'
 import { onMounted, reactive, ref, watch } from 'vue'
 import { api } from '../../integrations/fund-api'
+import FedEconomyPanel from '../../modules/fed/FedEconomyPanel.vue'
 import IndexTrendChart from '../../modules/index-trends/IndexTrendChart.vue'
+import NewsPanel from '../../modules/news/NewsPanel.vue'
 import AsyncBlock from '../../shared/ui/AsyncBlock.vue'
 
 const ranges = [
@@ -16,6 +18,7 @@ const ranges = [
 ]
 
 const selectedRange = ref('1y')
+const activeView = ref('news')
 const state = reactive({ loading: false, error: '', data: null })
 
 async function load() {
@@ -36,36 +39,53 @@ watch(selectedRange, load)
 
 <template>
   <main class="shell page info-page">
-    <section class="section-head">
-      <p class="eyebrow"><LineChart />信息</p>
-      <div class="head-row">
-        <div>
-          <h1>指数净值走势</h1>
-          <p>标普500、纳斯达克100、恒生、上证、沪深300、中证500。</p>
-        </div>
-        <button class="text-button" type="button" @click="load"><RefreshCw />刷新</button>
-      </div>
-    </section>
-
-    <section class="range-bar" aria-label="走势区间">
-      <button
-        v-for="range in ranges"
-        :key="range.value"
-        type="button"
-        :class="{ on: selectedRange === range.value }"
-        @click="selectedRange = range.value"
-      >
-        {{ range.label }}
+    <section class="view-tabs" aria-label="信息视图">
+      <button type="button" :class="{ on: activeView === 'news' }" @click="activeView = 'news'">
+        <Newspaper />新闻
+      </button>
+      <button type="button" :class="{ on: activeView === 'indexes' }" @click="activeView = 'indexes'">
+        <LineChart />指数
+      </button>
+      <button type="button" :class="{ on: activeView === 'fed' }" @click="activeView = 'fed'">
+        <Landmark />美联储
       </button>
     </section>
 
-    <AsyncBlock :state="state" @retry="load">
-      <template #default="{ data }">
-        <section class="index-grid" aria-label="指数净值走势图">
-          <IndexTrendChart v-for="item in data" :key="item.id" :item="item" />
-        </section>
-      </template>
-    </AsyncBlock>
+    <NewsPanel v-if="activeView === 'news'" />
+    <FedEconomyPanel v-else-if="activeView === 'fed'" />
+
+    <template v-else-if="activeView === 'indexes'">
+      <section class="section-head">
+        <p class="eyebrow"><LineChart />指数</p>
+        <div class="head-row">
+          <div>
+            <h1>指数净值走势</h1>
+            <p>标普500、纳斯达克100、恒生、上证、沪深300、中证500。</p>
+          </div>
+          <button class="text-button" type="button" @click="load"><RefreshCw />刷新</button>
+        </div>
+      </section>
+
+      <section class="range-bar" aria-label="走势区间">
+        <button
+          v-for="range in ranges"
+          :key="range.value"
+          type="button"
+          :class="{ on: selectedRange === range.value }"
+          @click="selectedRange = range.value"
+        >
+          {{ range.label }}
+        </button>
+      </section>
+
+      <AsyncBlock :state="state" @retry="load">
+        <template #default="{ data }">
+          <section class="index-grid" aria-label="指数净值走势图">
+            <IndexTrendChart v-for="item in data" :key="item.id" :item="item" />
+          </section>
+        </template>
+      </AsyncBlock>
+    </template>
   </main>
 </template>
 
@@ -75,6 +95,40 @@ watch(selectedRange, load)
   align-content: start;
   gap: 16px;
   padding-top: 142px;
+}
+
+.view-tabs {
+  display: inline-flex;
+  width: fit-content;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.view-tabs button {
+  display: inline-flex;
+  min-width: 84px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--muted);
+}
+
+.view-tabs button.on {
+  background: var(--accent);
+  color: oklch(98% 0.004 250);
+}
+
+.view-tabs svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.9;
 }
 
 .section-head {

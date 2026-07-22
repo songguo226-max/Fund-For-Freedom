@@ -19,12 +19,34 @@ async function request(path, params = {}) {
   return resp.json()
 }
 
+async function post(path, body = {}) {
+  const resp = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!resp.ok) {
+    let detail = `请求失败 (${resp.status})`
+    try {
+      const payload = await resp.json()
+      detail = payload.detail || detail
+    } catch {
+      detail = resp.statusText || detail
+    }
+    throw new Error(detail)
+  }
+  return resp.json()
+}
+
 export const api = {
   dataSources(filters = {}) {
     return request('/data-sources', filters)
   },
   indexTrends(params = {}) {
     return request('/index-trends', params)
+  },
+  fedEconomyAtGlance() {
+    return request('/fed/economy-at-a-glance')
   },
   search(q, source) {
     return request('/search', { q, source })
@@ -46,5 +68,14 @@ export const api = {
     url.searchParams.set('type', type)
     if (source) url.searchParams.set('source', source)
     return url.toString()
+  },
+  newsBootstrap() {
+    return request('/news/bootstrap')
+  },
+  syncNewsWatchlist(payload) {
+    return post('/news/watchlist', payload)
+  },
+  newsRefresh(params = {}) {
+    return request('/news/refresh', params)
   },
 }

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 const frontendDir = fileURLToPath(new URL('.', import.meta.url))
 const sharedAssetsDir = fileURLToPath(new URL('../assets', import.meta.url))
+const proxyTarget = process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:8010'
 
 export default defineConfig({
   plugins: [vue()],
@@ -14,7 +15,7 @@ export default defineConfig({
       allow: [frontendDir, sharedAssetsDir],
     },
     proxy: {
-      '/api': 'http://127.0.0.1:8010',
+      '/api': proxyTarget,
     },
   },
 })

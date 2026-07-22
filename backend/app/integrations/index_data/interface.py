@@ -32,6 +32,7 @@ class IndexSpec:
 class IndexPoint:
     day: date
     close: float
+    pct: float | None = None
 
 
 @runtime_checkable
